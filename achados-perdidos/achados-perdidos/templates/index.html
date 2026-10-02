@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achados & Perdidos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+<header class="cabecalho">
+    <div class="logo">
+        <span class="icone">🔎</span>
+        <div>
+            <h1>Achados & Perdidos</h1>
+            <p>Ajude um objeto a encontrar seu dono!</p>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <section class="card formulario">
+        <div class="titulo-secao">
+            <span>📋</span>
+            <div>
+                <h2>Cadastrar item</h2>
+                <p>Registre um objeto perdido ou encontrado.</p>
+            </div>
+        </div>
+
+        <form action="{{ url_for('adicionar') }}" method="POST">
+            <div class="campo">
+                <label for="tipo">Situação do item</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="">Selecione uma opção</option>
+                    <option value="Perdido">🔴 Perdido</option>
+                    <option value="Encontrado">🟢 Encontrado</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="nome">Nome do item</label>
+                <input type="text" id="nome" name="nome"
+                       placeholder="Ex.: Carteira preta" required>
+            </div>
+
+            <div class="campo">
+                <label for="descricao">Descrição</label>
+                <textarea id="descricao" name="descricao"
+                          placeholder="Descreva o item, cor, marca, características..."
+                          required></textarea>
+            </div>
+
+            <div class="campo">
+                <label for="local">Local</label>
+                <input type="text" id="local" name="local"
+                       placeholder="Ex.: Pátio da escola" required>
+            </div>
+
+            <div class="campo">
+                <label for="contato">Contato</label>
+                <input type="text" id="contato" name="contato"
+                       placeholder="Telefone, Instagram ou e-mail" required>
+            </div>
+
+            <button type="submit" class="btn-principal">
+                ➕ Cadastrar item
+            </button>
+        </form>
+    </section>
+
+    <section class="mural">
+        <div class="mural-topo">
+            <div>
+                <h2>📌 Mural de itens</h2>
+                <p>Confira os itens cadastrados.</p>
+            </div>
+            <div class="contador">{{ itens|length }} item(ns)</div>
+        </div>
+
+        <nav class="filtros">
+            <a href="{{ url_for('index', filtro='todos') }}"
+               class="{% if filtro == 'todos' %}ativo{% endif %}">
+                Todos
+            </a>
+            <a href="{{ url_for('index', filtro='perdidos') }}"
+               class="{% if filtro == 'perdidos' %}ativo{% endif %}">
+                🔴 Perdidos
+            </a>
+            <a href="{{ url_for('index', filtro='encontrados') }}"
+               class="{% if filtro == 'encontrados' %}ativo{% endif %}">
+                🟢 Encontrados
+            </a>
+        </nav>
+
+        <div class="lista">
+            {% if itens %}
+                {% for item in itens %}
+                <article class="item {% if item['resolvido'] %}resolvido{% endif %}">
+                    <div class="item-topo">
+                        <span class="etiqueta {% if item['tipo'] == 'Perdido' %}perdido{% else %}encontrado{% endif %}">
+                            {% if item['tipo'] == 'Perdido' %}
+                                🔴 Perdido
+                            {% else %}
+                                🟢 Encontrado
+                            {% endif %}
+                        </span>
+
+                        {% if item['resolvido'] %}
+                            <span class="status-resolvido">✓ Resolvido</span>
+                        {% endif %}
+                    </div>
+
+                    <h3>{{ item['nome'] }}</h3>
+                    <p class="descricao">{{ item['descricao'] }}</p>
+
+                    <div class="informacoes">
+                        <div>📍 <strong>Local:</strong> {{ item['local'] }}</div>
+                        <div>📞 <strong>Contato:</strong> {{ item['contato'] }}</div>
+                    </div>
+
+                    {% if not item['resolvido'] %}
+                    <div class="acoes">
+                        <form action="{{ url_for('resolver', id=item['id']) }}" method="POST">
+                            <button type="submit" class="btn-resolver">
+                                ✓ Marcar como resolvido
+                            </button>
+                        </form>
+
+                        <form action="{{ url_for('excluir', id=item['id']) }}"
+                              method="POST"
+                              onsubmit="return confirmarExclusao();">
+                            <button type="submit" class="btn-excluir">
+                                🗑 Excluir
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            {% else %}
+                <div class="vazio">
+                    <div class="emoji-vazio">🔍</div>
+                    <h3>Nenhum item encontrado</h3>
+                    <p>Ainda não há itens cadastrados nesta categoria.</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>🔎 Achados & Perdidos • Mini App</p>
+</footer>
+
+<script>
+function confirmarExclusao() {
+    return confirm("Tem certeza que deseja excluir este item?");
+}
+</script>
+</body>
+</html>
